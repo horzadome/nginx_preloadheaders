@@ -45,6 +45,8 @@ function preloadheaders.add_hit(dict, key, value)
 
     local uri = string.gsub(ngx.var.request_uri, "?.*", "")
 
+    debuglog[#debuglog+1] = "\nURI is "..uri
+        
     if not _G[uid.."hitmap"] then
         _G[uid.."hitmap"] = {}
     end
@@ -84,7 +86,7 @@ function preloadheaders.add_hit(dict, key, value)
     local i = 1
     local stufftopreload ={}
     local preloadhits = {};
-    while i <= 10 do
+    while i <= 40 do
 
         -- We are doing this if loop to prevent nginx from spitting out errors when it's restarted - while we don't know what to preload
         if _G[uid.."arraytopreload"][i] then
@@ -92,15 +94,48 @@ function preloadheaders.add_hit(dict, key, value)
             preloaduris[#preloaduris+1] = _G[uid.."arraytopreload"][i]
             preloaduri = table.concat(preloaduris);
 --             debuglog[#debuglog+1]= "\nPreloaduris is !"..preloaduri.."!"
-            
+ 
+-- Look for images
             if string.find(preloaduri, 'png$') then
                 preloaduri = "<"..preloaduri..">; rel=preload; as=image,"
             end
+            if string.find(preloaduri, 'jpg$') then
+                preloaduri = "<"..preloaduri..">; rel=preload; as=image,"
+            end
+            if string.find(preloaduri, 'jpeg$') then
+                preloaduri = "<"..preloaduri..">; rel=preload; as=image,"
+            end            if string.find(preloaduri, 'gif$') then
+                preloaduri = "<"..preloaduri..">; rel=preload; as=image,"
+            end
+            if string.find(preloaduri, 'svg$') then
+                preloaduri = "<"..preloaduri..">; rel=preload; as=image,"
+            end
+            if string.find(preloaduri, 'gif$') then
+                preloaduri = "<"..preloaduri..">; rel=preload; as=image,"
+            end
+-- Look for styles
             if string.find(preloaduri, 'css$') then
                 preloaduri = "<"..preloaduri..">; rel=preload; as=style,"
             end
+-- Look for fonts
+            if string.find(preloaduri, 'woff$') then
+                preloaduri = "<"..preloaduri..">; rel=preload; as=font,"
+            end
+-- Look for fonts
+            if string.find(preloaduri, 'woff2$') then
+                preloaduri = "<"..preloaduri..">; rel=preload; as=font,"
+            end
+-- Look for scripts
             if string.find(preloaduri, 'js$') then
                 preloaduri = "<"..preloaduri..">; rel=preload; as=script,"
+            end
+-- Look for documents
+            if string.find(preloaduri, 'html$') then
+                preloaduri = "<"..preloaduri..">; rel=preload; as=document,"
+            end
+-- Look for objects
+            if string.find(preloaduri, 'swf$') then
+                preloaduri = "<"..preloaduri..">; rel=preload; as=object,"
             end
 --          debuglog[#debuglog+1]= "\nMatched it !"..preloaduri.."!"
                 
