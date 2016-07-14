@@ -16,19 +16,22 @@ lua_shared_dict     log_dict    1M;
 ```
 * Add the logging snippet in the location which you want to track. I.e. you'll probably only want to track your static resource usage, so best add it to your static resource section if you have one. Otherwise, add it to your location /
 ```Nginx
-log_by_lua '
+log_by_lua_block {
     local preloadheaders = require("preloadheaders")
     local hit_uri = string.gsub(ngx.var.request_uri, "?.*", "")
-    preloadheaders.add_hit(ngx.shared.log_dict, hit_uri, hit_uri)
-';
+    preloadheaders.add_hit(ngx.shared.preloadheaders, hit_uri, hit_uri)
+}     
 ```
 * Add the rewrite snippet in the location which should have Link header added. I.e. your index file or your location /
 ```Nginx
-rewrite_by_lua '
-   local content_type = ngx.header.content_type
-   ngx.header.content_type = content_type
-   ngx.header.Link = ngx.shared.log_dict:get("linkheader")
-';
+rewrite_by_lua_block {
+    local uid = ngx.var.scheme .. ngx.var.host
+    uid = uid:gsub('%p', '')
+    local content_type = ngx.header.content_type
+    ngx.header.content_type = content_type
+    local linkuid = "link_" .. uid
+    ngx.header.Link = ngx.shared.preloadheaders:get(linkuid)
+}
 ```
 And that's it !
 
@@ -39,16 +42,20 @@ location / {
     index index.html /index.html;
     root   /var/www/example.com;
 
-    log_by_lua '
-         local preloadheaders = require("preloadheaders")
-         local hit_uri = string.gsub(ngx.var.request_uri, "?.*", "")
-         preloadheaders.add_hit(ngx.shared.log_dict, hit_uri, hit_uri)
-    ';
-    rewrite_by_lua '
-         local content_type = ngx.header.content_type
-         ngx.header.content_type = content_type
-         ngx.header.Link = ngx.shared.log_dict:get("linkheader")
-    ';
+    log_by_lua_block {
+        local preloadheaders = require("preloadheaders")
+        local hit_uri = string.gsub(ngx.var.request_uri, "?.*", "")
+        preloadheaders.add_hit(ngx.shared.preloadheaders, hit_uri, hit_uri)
+    }                                                                              
+           
+    rewrite_by_lua_block {
+        local uid = ngx.var.scheme .. ngx.var.host
+        uid = uid:gsub('%p', '')
+        local content_type = ngx.header.content_type
+        ngx.header.content_type = content_type
+        local linkuid = "link_" .. uid
+        ngx.header.Link = ngx.shared.preloadheaders:get(linkuid)
+    }
 }	
 ```
 
@@ -57,19 +64,22 @@ In case you do have a static resource section, you can split it up, so that only
 ```Nginx
 location ~* ^.+.(jpg|jpeg|gif|png|ico|js|css|exe|bin|gz|zip|rar|7z|pdf)$ {
     root   /var/www/example.com;
-    log_by_lua '
-         local preloadheaders = require("preloadheaders")
-         local hit_uri = string.gsub(ngx.var.request_uri, "?.*", "")
-         preloadheaders.add_hit(ngx.shared.log_dict, hit_uri, hit_uri)
-    ';    
+    log_by_lua_block {
+        local preloadheaders = require("preloadheaders")
+        local hit_uri = string.gsub(ngx.var.request_uri, "?.*", "")
+        preloadheaders.add_hit(ngx.shared.preloadheaders, hit_uri, hit_uri)
+    }    
 }
 location / {
     index index.html /index.html;
     root   /var/www/example.com;
-    rewrite_by_lua '
-         local content_type = ngx.header.content_type
-         ngx.header.content_type = content_type
-         ngx.header.Link = ngx.shared.log_dict:get("linkheader")
-    ';
+    rewrite_by_lua_block {
+        local uid = ngx.var.scheme .. ngx.var.host
+        uid = uid:gsub('%p', '')
+        local content_type = ngx.header.content_type
+        ngx.header.content_type = content_type
+        local linkuid = "link_" .. uid
+        ngx.header.Link = ngx.shared.preloadheaders:get(linkuid)
+    }
 }	
 ```
