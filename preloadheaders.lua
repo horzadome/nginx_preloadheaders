@@ -24,17 +24,12 @@ function preloadheaders.add_hit(dict, key, value)
 
 -- We need some sort of an UID in order to isolate various vhosts while allowing stuff to work across locations within the same vhost.
     local uid = ngx.var.scheme .. ngx.var.host
-    uid = uid:gsub('%p', '')
-    
-    _G[uid.."test"] = "marko"
-    
-    
+    uid = uid:gsub('%p', '')    
     
 -- I've commented out all the logging functions. Uncomment them if you want nginx error log to show you what's going on.
     local debuglog ={}
     debuglog[#debuglog+1] = "\n==================== New Request ====================\n"
     debuglog[#debuglog+1] = "\nHOST IS "..uid
-    debuglog[#debuglog+1] = "\nTest is IS ".._G[uid.."test"]
 
 -- Here we count the hits
     local hit_uri = dict:get(hit_uri_key)
@@ -50,11 +45,11 @@ function preloadheaders.add_hit(dict, key, value)
 
     local uri = string.gsub(ngx.var.request_uri, "?.*", "")
 
-    if not hitmap then
-        hitmap = {}
+    if not _G[uid.."hitmap"] then
+        _G[uid.."hitmap"] = {}
     end
 
-    hitmap[uri] = hit_count
+    _G[uid.."hitmap"][uri] = hit_count
     incr(dict, hit_count_key)
 
 -- Silly function to sort the array because lua can't do that on her own
@@ -79,10 +74,11 @@ function preloadheaders.add_hit(dict, key, value)
         end
     end
 
-    local arraytopreload = {}
+    _G[uid.."arraytopreload"] = {}
 
-    for k,v in spairs(hitmap, function(t,a,b) return t[b] < t[a] end) do
-            table.insert(arraytopreload, k)
+    
+    for k,v in spairs(_G[uid.."hitmap"], function(t,a,b) return t[b] < t[a] end) do
+            table.insert(_G[uid.."arraytopreload"], k)
     end
 
     local i = 1
@@ -91,9 +87,9 @@ function preloadheaders.add_hit(dict, key, value)
     while i <= 10 do
 
         -- We are doing this if loop to prevent nginx from spitting out errors when it's restarted - while we don't know what to preload
-        if arraytopreload[i] then
+        if _G[uid.."arraytopreload"][i] then
             local preloaduris = {}
-            preloaduris[#preloaduris+1] = arraytopreload[i]
+            preloaduris[#preloaduris+1] = _G[uid.."arraytopreload"][i]
             preloaduri = table.concat(preloaduris);
 --             debuglog[#debuglog+1]= "\nPreloaduris is !"..preloaduri.."!"
             
@@ -127,11 +123,14 @@ function preloadheaders.add_hit(dict, key, value)
 --     debuglog[#debuglog+1] = "\nPreload HITS is !"..preloadhits.."!"
 --     debuglog[#debuglog+1] = "\nStuff to preload is !"..stufftopreload.."!"
 
-    debuglog = table.concat(debuglog);
-    ngx.log(ngx.ERR, "\n"..debuglog.."\n")
+
 
 -- We're saving the resulting string in a shared dictionary so that we can use it elsewhere too
-    dict:set("linkheader", stufftopreload)
+    local linkuid = "link_" .. uid
+    dict:set(linkuid, stufftopreload)
+
+    debuglog = table.concat(debuglog);
+    ngx.log(ngx.ERR, "\n"..debuglog.."\n")
 end
 
 -- safety net
