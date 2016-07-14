@@ -3,7 +3,6 @@ nginx lua module for automatically determining resources which should be added t
 
 # Don't use this module yet
 This is work in progress and does **NOT** work as advertised
-* It does not work correctly if it's used on more than 1 vhost (no isolation, so everything is preloaded regardless of the visited URL :eek:)
 * I haven't benchmarked it yet, so no idea if it will blow up on production servers
 * It's debugging by default, meaning it constantly spits stuff up in vhost's error.log
 * I don't know lua and don't know programming, so this is a perfect example of code you don't want anywhere near you
