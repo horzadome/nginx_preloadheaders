@@ -165,7 +165,7 @@ function preloadheaders.add_hit(dict, key, value)
     dict:set(linkuid, stufftopreload)
 
     debuglog = table.concat(debuglog);
-    ngx.log(ngx.ERR, "\n"..debuglog.."\n")
+--     ngx.log(ngx.ERR, "\n"..debuglog.."\n")
 end
 
 -- safety net
