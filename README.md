@@ -1,7 +1,7 @@
 # nginx_preloaders
 nginx lua module for automatically determining resources which should be added to "Link" http header in order for web browsers to preload them. In case the server is behind an http/2 Server Push capable proxy (such as CloudFlare), the proxy will actually push those resources without the clients even requesting them (read more about it at the bottom of this Readme).
 
-# Results may vary
+## Results may vary
 * I haven't benchmarked this on high-traffic or large-vhost servers, so no idea if it will blow up there
 * Like any other optimization, it varies depending on the use case. It will most probably improve user experience, and I don't see how it should hinder it. However, you should measure it before launching to production.
 
@@ -33,7 +33,7 @@ rewrite_by_lua_block {
 ```
 And that's it !
 
-## Usage Help Examples
+### Usage Help Examples
 If you don't have a separate static resource section, you'll want your / location to look something like this:
 ```Nginx
 location / {
@@ -82,7 +82,7 @@ location / {
 }	
 ```
 
-# Preload introduction
+## Preload introduction
 There's 2 concepts to understand before going into preloading.
 1) The preload keyword on link elements (as in html head "link" element) https://www.w3.org/TR/preload/#dfn-preload-link
 2) Link header (as in http header which can be used to designate resources which need to be preloaded)
@@ -105,7 +105,7 @@ In case of http/2 server, the server will actually initiate a server push immedi
 
 In case your server doesn't support HTTP2 Server Push technology, try CloudFlare(tm). It's free and totally awesome. Just enable SSL (yeah, that's free too) and you'll get http2 including server push automatically.
 
-# A bit about HTTP/2 Server Push Technology
+### A bit about HTTP/2 Server Push Technology
 
 "HTTP/2 allows a server to pre-emptively send (or "push") responses (along with corresponding "promised" requests) to a client in association with a previous client-initiated request. This can be useful when the server knows the client will need to have those responses available in order to fully process the response to the original request."*
 
