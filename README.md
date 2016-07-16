@@ -1,4 +1,4 @@
-# nginx_preloaders
+# nginx_preloadheaders
 nginx lua module for automatically determining resources which should be added to "Link" http header in order for web browsers to preload them. In case the server is behind an http/2 Server Push capable proxy (such as CloudFlare), the proxy will actually push those resources without the clients even requesting them (read more about it at the bottom of this Readme).
 
 ## Results may vary
