@@ -10,7 +10,7 @@ nginx lua module for automatically determining resources which should be added t
 * Load the module in nginx's **http** section (nginx.conf)
 ```Nginx
 lua_package_path    "/etc/nginx/lua-modules/?.lua;;";
-lua_shared_dict     log_dict    1M;
+lua_shared_dict     preloadheaders    1M;
 ```
 * Add the logging snippet in the location which you want to track. I.e. you'll probably only want to track your static resource usage, so best add it to your static resource section if you have one. Otherwise, add it to your location /
 ```Nginx
