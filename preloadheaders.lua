@@ -32,18 +32,23 @@ function preloadheaders.add_hit(dict, key, value)
     debuglog[#debuglog+1] = "\nHOST IS "..uid
 
 -- Here we count the hits
+    local hit_uri_key_unfiltered = hit_uri_key
+    local hit_uri_key = string.gsub(hit_uri_key_unfiltered, "//", "/")
+    
     local hit_uri = dict:get(hit_uri_key)
     if hit_uri then
     end
 
     if not hit_uri then
-        local uri = string.gsub(ngx.var.request_uri, "?.*", "")
+        local uri_unfiltered = string.gsub(ngx.var.request_uri, "?.*", "")
+        local uri = string.gsub(uri_unfiltered, "//", "/")
         dict:set(hit_uri_key, uri)
     end
 
     local hit_count = dict:get(hit_count_key) or 0
 
-    local uri = string.gsub(ngx.var.request_uri, "?.*", "")
+    local uri_unfiltered = string.gsub(ngx.var.request_uri, "?.*", "")
+    local uri = string.gsub(uri_unfiltered, "//", "/")
 
     debuglog[#debuglog+1] = "\nURI is "..uri
         
